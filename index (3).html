@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>User page</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <link href = "https://fonts.googleapis.com/icon?family=Material+Icons" rel = "stylesheet">
+  <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <style>
+		body {font-family: Arial;}
+
+		.tab {
+		  overflow: hidden;
+		  border: 1px solid #ccc;
+		  background-color: #f1f1f1;
+		}
+
+		.tab button {
+		  background-color: inherit;
+		  float: left;
+		  border: none;
+		  outline: none;
+		  cursor: pointer;
+		  padding: 14px 16px;
+		  transition: 0.3s;
+		  font-size: 17px;
+		}
+
+		.tab button:hover {
+		  background-color: #ddd;
+		}
+
+		.tab button.active {
+		  background-color: #ccc;
+		}
+
+		.tabcontent {
+		  display: none;
+		  padding: 6px 12px;
+		  border: 1px solid #ccc;
+		  border-top: none;
+		}
+	</style>
+	<script>
+        $(function() {
+          $( ".tablinks" ).draggable();
+        });
+	</script>
+</head>
+<body>
+<div class="container">
+	<div class="row">
+		<div>
+			<div class="tab">
+				<button type="button" class="btn btn-success" style="color:black" data-toggle="modal" data-target="#accountModal">Create Form</button>
+			</div>
+			<div class="content"></div>
+		</div>		
+	</div>	
+</div>
+<div class="modal" id="accountModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Employee Form</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+		<form id="myForm" name="myForm">
+			  <div class="form-group">
+				<label for="name">Employee Number</label>
+				<input type="text" class="form-control" name="number"  pattern="[0-9,-]{4,8}"  required>
+			  </div>
+			  <div class="form-group">
+				<label for="name">Employee Name</label>
+				<input type="text" class="form-control" name="name" pattern="[a-z,A-Z, ,-]{1,15}" required>
+			  </div>
+			  <div class="form-group">
+				<label for="password">Employee Id</label>
+				<input type="number" class="form-control" name="id" pattern="[0-9]{1,15}" required>
+			  </div>
+			  <div class="form-group">
+				<label for="token">Employee birth day</label>
+				<input type="date" class="form-control" name="day" oninvalid="myFunction()" required>
+			  </div>
+			  <div class="form-group">
+				<label for="token">Employee gender</label>
+				<div class="form-check">
+					<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="gender" id="Male" checked>Male</label>
+				</div>
+				<div class="form-check">
+					<label class="form-check-label">
+					<input class="form-check-input" type="radio" name="gender" id="Female">Female</label>
+				</div>
+			  </div>
+			  <button type="submit" class="btn btn-danger">Submit</button>
+		</form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/babel">
+
+	
+	function myFunction() {
+		event.preventDefault();
+		var burstday =  new Date($("[name='day']").val());
+		var now = new Date();
+
+		var date_burstday = Date.UTC(burstday.getFullYear(), burstday.getMonth(), burstday.getDate());
+		var date_now = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+		var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+		var diff_date = Math.floor((date_now - date_burstday) / _MS_PER_DAY);
+	  
+		if(diff_date <18){
+			$("[name='day']").after('<p>Wrong date.</p>');
+			return false;
+		}
+		return true;
+	}
+
+	$('#myForm').submit(function(e){
+		e.preventDefault();
+		var number = $("[name='number']").val();
+		var name = $("[name='name']").val();
+		var id = $("[name='id']").val();
+		var day = $("[name='day']").val();
+		var gender = $("input[type=radio][name='gender']:checked").attr('id');
+		var employe = {
+			number:number, 
+			name:name, 
+			id:id,
+			day:day,
+			gender:gender
+		};
+		localStorage.clear();
+		$('#myForm').get(0).reset() 
+		localStorage.setItem(name, JSON.stringify(employe));
+		var value = localStorage.getItem(name);
+		var objEmploye = JSON.parse(value);
+		number = objEmploye["number"];
+		name = objEmploye["name"];
+		id = objEmploye["id"];
+		day = objEmploye["day"];
+		gender = objEmploye["gender"];
+		$('.tab').append("<button class=\"tablinks ui-widget-content ui-draggable\" onclick=\"openCity(event,'"+name+"')\">"+name+"</button>");
+		$('.content').append('<div id="'+name+'" class="tabcontent"><p>number:'+number+'</p><p>name:'+name+'</p><p>id:'+id+'</p><p>day:'+day+'</p><p>gender:'+gender+'</p></div>');
+		$("#accountModal .close").click();
+	})
+	
+	function openCity(evt, cityName) {
+	  var i, tabcontent, tablinks;
+	  tabcontent = document.getElementsByClassName("tabcontent");
+	  for (i = 0; i < tabcontent.length; i++) {
+		tabcontent[i].style.display = "none";
+	  }
+	  tablinks = document.getElementsByClassName("tablinks");
+	  for (i = 0; i < tablinks.length; i++) {
+		tablinks[i].className = tablinks[i].className.replace("active", "");
+	  }
+	  document.getElementById(cityName).style.display = "block";
+	  evt.currentTarget.className += " active";
+	}
+</script>
+</body>
+</html>
